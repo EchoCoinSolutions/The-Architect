@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Echo Claim</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:2em">
+  <h2>Echo Claim App</h2>
+  <p>Connect wallet to claim 10 ECHO</p>
+  <button onclick="connectWallet()">Connect</button>
+  <div id="walletAddress" style="margin:1em 0"></div>
+  <button onclick="claimEcho()">Claim</button>
+  <p id="status" style="margin-top:1em;color:#555;"></p>
+
+  <script>
+    let web3;
+    const tokenAddress = "0x59509d856b29a029420ca5346922a46349c0e82c";
+    const fromAddress = "0xYOUR_WALLET_HERE";
+    const claimAmount = "10000000000000000000";
+
+    const abi = [{
+      "constant": false,
+      "inputs": [
+        { "name": "_to", "type": "address" },
+        { "name": "_value", "type": "uint256" }
+      ],
+      "name": "transfer",
+      "outputs": [{ "name": "", "type": "bool" }],
+      "type": "function"
+    }];
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await web3.eth.getAccounts();
+        document.getElementById("walletAddress").textContent = `Connected: ${accounts[0]}`;
+      } else {
+        document.getElementById("status").textContent = "MetaMask not detected.";
+      }
+    }
+
+    async function claimEcho() {
+      const accounts = await web3.eth.getAccounts();
+      const recipient = accounts[0];
+      const echo = new web3.eth.Contract(abi, tokenAddress);
+      try {
+        await echo.methods.transfer(recipient, claimAmount).send({ from: fromAddress });
+        document.getElementById("status").textContent = "10 ECHO claimed!";
+      } catch (err) {
+        document.getElementById("status").textContent = `Error: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
